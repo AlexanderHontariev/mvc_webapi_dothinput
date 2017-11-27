@@ -1,0 +1,179 @@
+﻿<style>
+    .modal-lg {
+        width: calc(100% - 200px);
+    }
+</style>
+
+<script>
+
+    function ViewModel() {
+
+        this.images = ko.observableArray();
+        this.currentPage = ko.observable(1);
+        this.totalPages = ko.observable(0);
+        this.displayImages = ko.observable(true);
+        this.displayLoader = ko.observable(false);
+        this.displayImgInfo = ko.observable(false);
+        this.displayPaging = ko.observable(true);
+
+        this.imgInfo = new ImageInfoObj();
+
+        this.prev = function () {
+            if (this.currentPage() > 1) {
+                this.currentPage(this.currentPage() - 1);
+                this.getAllImages();
+            }
+        }.bind(this);
+
+        this.next = function () {
+            if (this.currentPage() < this.totalPages()) {
+                this.currentPage(this.currentPage() + 1);
+                this.getAllImages();
+            }
+        }.bind(this);
+
+        this.getAllImages = function () {
+            viewModel.displayImages(false);
+            viewModel.displayLoader(true);
+            this.images.removeAll();
+            sendAjaxRequest("GET", "GetAllImages", { page: this.currentPage() }, function (data) {
+                for (var i = 0; i < data.Images.length; i++) {
+                    viewModel.images.push(data.Images[i]);
+                }
+                viewModel.currentPage(data.Paging.CurentPage);
+                viewModel.totalPages(data.Paging.TotalPages);
+                viewModel.displayImages(true);
+                viewModel.displayLoader(false);
+                viewModel.displayImgInfo(false);
+            });
+        }.bind(this);
+    } // ViewModel
+
+    function ImageInfoObj() {
+        this.id = ko.observable(0);
+        this.imgName = ko.observable('');
+        this.altText = ko.observable('');
+        this.width = ko.observable('');
+        this.height = ko.observable('');
+        this.lastModefied = ko.observable(Date.now());
+        this.creationDate = ko.observable(Date.now());
+    }
+
+    function getImgInfo(imgObj) {
+
+        viewModel.displayImages(false);
+        viewModel.displayImgInfo(true);
+        viewModel.displayPaging(false);
+
+        viewModel.imgInfo.id(imgObj.Id);
+        viewModel.imgInfo.imgName(imgObj.ImageName);
+        viewModel.imgInfo.altText(imgObj.AltText);
+        viewModel.imgInfo.width(imgObj.Width);
+        viewModel.imgInfo.height(imgObj.Height);
+        viewModel.imgInfo.creationDate(imgObj.CreationDate);
+        viewModel.imgInfo.lastModefied(imgObj.LastModefied);
+
+        console.log(viewModel.imgInfo.imgName());
+    }
+
+    function sendAjaxRequest(httpMethod, url, data, callbackSuccess, callbackError) {
+        $.ajax("/api/web" + (url ? "/" + url : ""), {
+            type: httpMethod,
+            data: data,
+            success: callbackSuccess,
+            error: callbackError
+        })
+    }
+
+    function backToImagesList() {
+        viewModel.displayImages(true);
+        viewModel.displayPaging(true);
+        viewModel.displayImgInfo(false);
+    }
+
+    function deleteImage(img) {
+        sendAjaxRequest("DELETE", "DeleteImage/" + img.id(), null, function () {
+            viewModel.getAllImages();
+            viewModel.displayPaging(true);
+        }, function (error) { console.log(error.responseText) });
+    }
+
+    function makePost() {
+        jQuery.post("/Web/PostExample", JSON.stringify({ Name: "Vasya", Age: 23 }), function (r) { console.log(r) });
+    }
+
+    var viewModel = new ViewModel();
+    $(document).ready(function () {
+        ko.applyBindings(viewModel);
+        viewModel.getAllImages();
+    });
+
+</script>
+
+<script type="text/html" id="imageInfo">
+    <div class="row">
+        <div class="col-xs-6">
+            <img data-bind="attr: { src: '/Images/' + imgName(), alt: altText }" />
+        </div>
+        <div class="col-xs-6">
+            <p>ID: <span data-bind="text: id"></span></p>
+            <p>Альтернативный текст: <span data-bind="text: altText"></span></p>
+            <p>Размер: <span data-bind="text: width"></span> x <span data-bind="text: height"></span></p>
+            <p>Дата создания: <span data-bind="text: creationDate"></span></p>
+            <p>Последние изменения: <span data-bind="text: lastModefied"></span></p>
+            <hr/>
+            <div>
+                <button class="btn btn-default" data-bind="click: backToImagesList" type="button">Назад</button>
+                <button class="btn btn-danger" data-bind="click: deleteImage" type="button">Удалить навсегда</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="pagingTemplate">
+    <div class="text-left">
+        Страница <span data-bind="text: currentPage"></span> / <span data-bind="text: totalPages"></span>
+    </div>
+    <div class="text-right">
+        <button data-bind="click: prev" class="btn btn-primary">
+            <i class="glyphicon glyphicon-chevron-left"></i>
+        </button>
+        <button data-bind="click: next" class="btn btn-primary">
+            <i class="glyphicon glyphicon-chevron-right"></i>
+        </button>
+    </div>
+</script>
+
+<div id="imageModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Список картинок</h4>
+            </div> <!-- / modal-header -->
+            <div data-bind="if: displayLoader" class="text-center modal-body">
+                <img src="~/Images/image-loader.gif" />
+            </div>
+            <div class="modal-body" data-bind="if: displayImages">
+                <div class="row" data-bind="foreach: images">
+                    <a href="#" class="col-xs-2" data-bind="click: getImgInfo">
+                        <img style="display:block;width:100%;" data-bind="attr: { src: '/Images/' + ImageName, alt: AltText }" />
+                    </a>
+                </div>
+            </div>
+            <div data-bind="if: displayImgInfo">
+                <div data-bind="template: {name: 'imageInfo', data: imgInfo }"></div>
+            </div>
+            <div class="modal-footer">
+
+                <div data-bind="if: displayPaging">
+                    <div data-bind="template : {name: 'pagingTemplate'}"></div>
+                </div>
+                
+                <hr />
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Добавить картинку</button>
+            </div>
+        </div> <!-- / modal-content -->
+    </div>
+</div>
