@@ -131,6 +131,7 @@
     </Compile>
     <Compile Include="Models\Image.cs" />
     <Compile Include="Models\ImageModel.cs" />
+    <Compile Include="Models\ImageResponse.cs" />
     <Compile Include="Models\Paging.cs" />
     <Compile Include="Models\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

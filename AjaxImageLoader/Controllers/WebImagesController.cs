@@ -38,22 +38,34 @@ namespace AjaxImageLoader.Controllers
         }
 
         [HttpPost]
-        public void CreateImage()
+        public HttpResponseMessage CreateImage()
         {
             var files = HttpContext.Current.Request.Files;
-            for (int i = 0; i < files.Count; i++)
+            ImageResponse imageResponse = new ImageResponse();
+
+            // response from this: http://www.tutorialsteacher.com/webapi/action-method-return-type-in-web-api
+
+            if (files.Count != 0)
             {
-                HttpPostedFile file = files[i];
-                int contentLength = file.ContentLength;
-                string contentType = file.ContentType;
-
-                if (new string[] { "image/jpeg", "image/png", "image/gif" }.Any(ct => ct == contentType) && contentLength <= 900000)
+                for (int i = 0; i < files.Count; i++)
                 {
-                    file.SaveAs(Path.Combine(GetImageFolderPath(), file.FileName));
-                } else
-                {
+                    HttpPostedFile file = files[i];
+                    int contentLength = file.ContentLength;
+                    string contentType = file.ContentType;
 
+                    if (new string[] { "image/jpeg", "image/png", "image/gif" }.Any(ct => ct == contentType) && contentLength <= 900000)
+                    {
+                        file.SaveAs(Path.Combine(GetImageFolderPath(), file.FileName));
+                        imageResponse.ImagesNameList.Add(file.FileName);
+                        _repo.CreateImage(new Image { Id = _repo.Length + 1, AltText = "", CreationDate = DateTime.Now, LastModefied = DateTime.Now, ImageName = file.FileName, Width = 0, Height = 0 });
+                    }
                 }
+                imageResponse.Message = "Файлы успешно загружены!";
+                return Request.CreateResponse(HttpStatusCode.OK, imageResponse);
+            } else
+            {
+                imageResponse.Message = "Ошибка при загрузке файлов!";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, imageResponse);
             }
         }
 

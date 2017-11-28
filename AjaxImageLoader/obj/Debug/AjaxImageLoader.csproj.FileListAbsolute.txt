@@ -172,5 +172,3 @@ D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\obj\Debug\Aj
 D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\obj\Debug\AjaxImageLoader.csproj.CoreCompileInputs.cache
 D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\obj\Debug\AjaxImageLoader.dll
 D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\obj\Debug\AjaxImageLoader.pdb
-D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\bin\NLog.dll
-D:\GITHUB\mvc_webapi_dothinput\mvc_webapi_dothinput\AjaxImageLoader\bin\NLog.xml
