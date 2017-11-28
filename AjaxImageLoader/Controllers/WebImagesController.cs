@@ -37,16 +37,29 @@ namespace AjaxImageLoader.Controllers
             }
         }
 
-        [HttpPut]
-        public void CreateImage (Image img)
+        [HttpPost]
+        public void CreateImage()
         {
+            var files = HttpContext.Current.Request.Files;
+            for (int i = 0; i < files.Count; i++)
+            {
+                HttpPostedFile file = files[i];
+                int contentLength = file.ContentLength;
+                string contentType = file.ContentType;
 
+                if (new string[] { "image/jpeg", "image/png", "image/gif" }.Any(ct => ct == contentType) && contentLength <= 900000)
+                {
+                    file.SaveAs(Path.Combine(GetImageFolderPath(), file.FileName));
+                } else
+                {
+
+                }
+            }
         }
 
-        [HttpPost]
-        public void PostExample (Person p)
+        private string GetImageFolderPath()
         {
-
+            return HttpContext.Current.Request.MapPath("~/Images");
         }
     }
 }

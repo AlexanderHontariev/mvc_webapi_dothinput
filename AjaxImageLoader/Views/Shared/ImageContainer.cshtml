@@ -104,8 +104,28 @@
 
     var viewModel = new ViewModel();
     $(document).ready(function () {
+
         ko.applyBindings(viewModel);
         viewModel.getAllImages();
+
+        $('#uploadFile').click(function () {
+            $('#fileUploader').trigger('click');
+        });
+
+        $('#fileUploader').on('change', function () {
+
+            var data = new FormData($('#formFileUploader')[0]);
+
+            $.ajax({
+                type: 'POST',
+                url: "/api/web/createimage",
+                enctype: 'multipart/form-data',
+                contentType: false,
+                processData: false,
+                cache: false,
+                data: data
+            });
+        });
     });
 
 </script>
@@ -144,6 +164,16 @@
     </div>
 </script>
 
+<script id="">
+    <div class="alert alert-success">
+        <strong>Success!</strong> Indicates a successful or positive action.
+    </div>
+
+    <div class="alert alert-error">
+        <strong>Success!</strong> Indicates a successful or positive action.
+    </div>
+</script>
+
 <div id="imageModal" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -165,14 +195,18 @@
                 <div data-bind="template: {name: 'imageInfo', data: imgInfo }"></div>
             </div>
             <div class="modal-footer">
-
                 <div data-bind="if: displayPaging">
                     <div data-bind="template : {name: 'pagingTemplate'}"></div>
                 </div>
                 
                 <hr />
                 <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal">Добавить картинку</button>
+                <button id="uploadFile" type="button" class="btn btn-primary" style="position: relative">
+                    Добавить картинку
+                </button>
+                <form id="formFileUploader">
+                    <input id="fileUploader" multiple name="file" type="file" style="opacity: 0; height: 0" />
+                </form>
             </div>
         </div> <!-- / modal-content -->
     </div>
